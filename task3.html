@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tic-Tac-Toe — Nature Harmony</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#fefae0;
+    --bg-2:#e9f5ec;
+    --accent-1:#2a9d8f; 
+    --accent-2:#8ac6a3; 
+    --card:#ffffff;
+    --muted:#5b6b66;
+    --text:#0f2a26;
+    --shadow: 0 20px 50px rgba(7,30,27,0.18);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,-apple-system;
+    background: linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 100%); color:var(--text)}
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px}
+  .card{
+    width:100%;max-width:1100px;border-radius:var(--radius);background:var(--card);
+    box-shadow:var(--shadow);overflow:hidden;
+    display:grid;grid-template-columns:340px 1fr;gap:0;
+  }
+
+  .left{
+    background:linear-gradient(180deg,var(--accent-2), rgba(138,198,163,0.95));
+    color:#012a26;padding:28px;display:flex;flex-direction:column;gap:10px;
+  }
+  .left h2{margin:0 0 10px;font-weight:700;font-size:1.2rem;}
+  .left p{margin:4px 0;font-size:0.95rem;line-height:1.5;font-weight:400;}
+
+  .right{padding:22px 28px;display:flex;flex-direction:column;gap:14px}
+  .topbar{display:flex;align-items:center;gap:14px;justify-content:space-between}
+  .title{font-size:1.6rem;font-weight:700;color:var(--text)}
+  .subtitle{color:var(--muted);font-size:0.95rem;margin-top:4px}
+
+  .setup{
+    margin-top:6px;background:linear-gradient(180deg,rgba(2,40,35,0.02),rgba(2,40,35,0.01));
+    padding:14px;border-radius:12px;border:1px solid rgba(2,40,35,0.04);
+    display:grid;grid-template-columns:repeat(12,1fr);gap:10px;align-items:center;
+  }
+  .setup .col{padding:6px;}
+  .label{font-weight:600;font-size:0.92rem;color:var(--text);margin-bottom:6px;display:block}
+  input[type="text"]{
+    width:100%;padding:10px;border-radius:8px;border:1px solid rgba(2,40,35,0.08);
+    font-size:0.95rem;background:#fff;
+  }
+
+  .seg{display:inline-flex;border-radius:10px;overflow:hidden;border:1px solid rgba(15,42,38,0.06)}
+  .seg button{padding:8px 12px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-weight:600}
+  .seg button.active{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white}
+
+  .play-area{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .board{display:grid;grid-template-columns:repeat(3,120px);grid-template-rows:repeat(3,120px);gap:12px;padding:18px}
+  .cell{
+    background:linear-gradient(180deg,#f8fbf7,#eef7ee);border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:42px;cursor:pointer;color:var(--text);user-select:none;
+    box-shadow:0 8px 18px rgba(2,40,35,0.06);
+  }
+  .cell.x{color:#2b6b5a;font-weight:700}
+  .cell.o{color:#2a9d8f;font-weight:700}
+  .cell.win{box-shadow:0 12px 30px rgba(42,157,143,0.18);outline:3px solid rgba(42,157,143,0.12)}
+
+  .footer-row{display:flex;gap:16px;align-items:center;justify-content:space-between;width:100%}
+  .score{background:linear-gradient(180deg,var(--accent-2), rgba(138,198,163,0.95));padding:12px;border-radius:10px;color:#022;min-width:220px}
+  .score h4{margin:0 0 6px;font-size:0.95rem}
+  .score p{margin:4px 0;color:#052b27}
+
+  .actions{display:flex;gap:10px;align-items:center}
+  .btn{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+    border:none;padding:10px 16px;border-radius:10px;color:white;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(2,40,35,0.06);color:var(--muted);font-weight:600}
+
+  .turn-indicator{margin-top:6px;font-size:1rem;font-weight:600;color:var(--accent-1)}
+
+  /* Popup modal */
+  .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);
+    display:none;align-items:center;justify-content:center;z-index:999;}
+  .modal-content{background:#fff;padding:24px;border-radius:12px;box-shadow:var(--shadow);text-align:center;max-width:320px}
+  .modal-content h3{margin-top:0;font-size:1.3rem;color:var(--accent-1)}
+  .modal-content button{margin-top:14px;padding:8px 16px;border:none;border-radius:8px;background:var(--accent-1);color:white;cursor:pointer;font-weight:600}
+
+  @media (max-width:980px){
+    .card{grid-template-columns:1fr;max-width:900px}
+    .left{order:2}.right{order:1}
+    .board{grid-template-columns:repeat(3,calc((100vw - 120px)/3));grid-auto-rows:calc((100vw - 120px)/3)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <aside class="left">
+      <h2>How to Play</h2>
+      <p>Pick mode: vs Human or vs Computer.</p>
+      <p>Enter player names (optional). If blank, default names will be used.</p>
+      <p>In Computer mode, choose X or O to play.</p>
+      <p>Click a square to place your mark.</p>
+      <p>Three in a row — row, column, or diagonal — wins the game.</p>
+      <p>Restart to reset the board. The scoreboard updates after each win.</p>
+    </aside>
+
+    <main class="right">
+      <div class="topbar">
+        <div>
+          <div class="title">Tic-Tac-Toe</div>
+          <div class="subtitle">Play with friends or challenge the computer</div>
+        </div>
+        <div class="seg">
+          <button id="modePVP" class="active">👥 vs Human</button>
+          <button id="modePVC">🤖 vs Computer</button>
+        </div>
+      </div>
+
+      <section class="setup">
+        <div class="col" style="grid-column:span 3">
+          <label class="label">Player X</label>
+          <input id="nameX" type="text" placeholder="Player X">
+        </div>
+        <div class="col" style="grid-column:span 3">
+          <label class="label">Player O</label>
+          <input id="nameO" type="text" placeholder="Player O">
+        </div>
+
+        <div class="col" id="sideSelect" style="grid-column:span 2;display:none">
+          <label class="label">Play as</label>
+          <div>
+            <label><input type="radio" name="side" value="X" checked> X</label>
+            <label style="margin-left:10px"><input type="radio" name="side" value="O"> O</label>
+          </div>
+        </div>
+
+        <div class="col" style="grid-column:span 2;display:flex;align-items:flex-end;justify-content:flex-end">
+          <button class="btn" id="startBtn">▶ Start New Game</button>
+        </div>
+      </section>
+
+      <section class="play-area">
+        <div class="board" id="board"></div>
+        <div class="turn-indicator" id="turnIndicator"></div>
+
+        <div class="footer-row">
+          <div class="score">
+            <h4>Scoreboard</h4>
+            <p id="scoreX">Player X: 0</p>
+            <p id="scoreO">Player O: 0</p>
+            <p id="scoreD">Draws: 0</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="undoBtn">↩ Undo</button>
+            <button class="btn" id="redoBtn">↪ Redo</button>
+            <button class="btn" id="restartBtn">♻ Restart</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Popup modal -->
+<div class="modal" id="winnerModal">
+  <div class="modal-content">
+    <h3 id="winnerMsg"></h3>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+const WIN_COMBOS=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let board=Array(9).fill(null),current='X',gameActive=false,history=[],redoStack=[];
+let mode='pvp',humanSide='X',compSide='O',scores={X:0,O:0,D:0};
+const boardEl=document.getElementById('board');
+const scoreXEl=document.getElementById('scoreX'),scoreOEl=document.getElementById('scoreO'),scoreDEl=document.getElementById('scoreD');
+const nameXEl=document.getElementById('nameX'),nameOEl=document.getElementById('nameO');
+const btnPVP=document.getElementById('modePVP'),btnPVC=document.getElementById('modePVC');
+const startBtn=document.getElementById('startBtn'),restartBtn=document.getElementById('restartBtn');
+const turnIndicator=document.getElementById('turnIndicator'); const sideSelect=document.getElementById('sideSelect');
+const modal=document.getElementById('winnerModal'); const winnerMsg=document.getElementById('winnerMsg');
+
+function renderScores(){scoreXEl.textContent=`${getName('X')}: ${scores.X}`;scoreOEl.textContent=`${getName('O')}: ${scores.O}`;scoreDEl.textContent=`Draws: ${scores.D}`;}
+function getName(sym){const v=(sym==='X'?nameXEl.value.trim():nameOEl.value.trim());return v?v:`Player ${sym}`;}
+function buildBoard(){boardEl.innerHTML='';for(let i=0;i<9;i++){const c=document.createElement('button');c.className='cell';c.setAttribute('data-i',i);c.onclick=()=>onCellClick(i);c.textContent=board[i]||'';if(board[i])c.classList.add(board[i].toLowerCase());boardEl.appendChild(c);}updateTurn();}
+function updateTurn(){if(!gameActive){turnIndicator.textContent='';return;}turnIndicator.textContent=`Turn: ${getName(current)} (${current})`;}
+function resetAndStart(){board=Array(9).fill(null);history=[];redoStack=[];current='X';gameActive=true;buildBoard();renderScores();if(mode==='pvc'&&humanSide==='O')computerMove();}
+function onCellClick(i){if(!gameActive||board[i])return;if(mode==='pvc'&&current!==humanSide)return;playMove(i,current);}
+function playMove(i,player){board[i]=player;history.push({i,player});redoStack=[];updateCellUI(i);const win=checkWinFor(player);if(win){handleWin(player,win);return;}if(board.every(Boolean)){handleDraw();return;}current=(player==='X')?'O':'X';updateTurn();if(mode==='pvc'&&current===compSide)computerMove();}
+function updateCellUI(i){const c=boardEl.querySelector(`[data-i="${i}"]`);if(!c)return;c.textContent=board[i]||'';c.classList.toggle('x',board[i]==='X');c.classList.toggle('o',board[i]==='O');}
+function checkWinFor(p){for(const combo of WIN_COMBOS){if(combo.every(i=>board[i]===p))return combo;}return null;}
+function handleWin(p,combo){gameActive=false;combo.forEach(i=>boardEl.querySelector(`[data-i="${i}"]`).classList.add('win'));scores[p]++;renderScores();turnIndicator.textContent=`${getName(p)} wins!`;confetti({particleCount:150,spread:70,origin:{y:0.6}});showModal(`${getName(p)} wins!`);}
+function handleDraw(){gameActive=false;scores.D++;renderScores();turnIndicator.textContent="It's a draw!";showModal("It's a draw!");}
+function showModal(msg){winnerMsg.textContent=msg;modal.style.display="flex";}
+function closeModal(){modal.style.display="none";}
+
+function computerMove(){setTimeout(()=>{let move=null;
+// 1. Try to win
+  for(const combo of WIN_COMBOS){const [a,b,c]=combo;const line=[board[a],board[b],board[c]];
+    if(line.filter(v=>v===compSide).length===2&&line.includes(null)){move=combo[line.indexOf(null)];break;}}
+// 2. Block opponent
+  if(move===null){for(const combo of WIN_COMBOS){const [a,b,c]=combo;const line=[board[a],board[b],board[c]];
+    if(line.filter(v=>v===humanSide).length===2&&line.includes(null)){move=combo[line.indexOf(null)];break;}}}
+// 3. Take center if free
+  if(move===null&&board[4]===null)move=4;
+// 4. Take a random corner sometimes
+  if(move===null){const corners=[0,2,6,8].filter(i=>board[i]===null);if(corners.length&&Math.random()<0.6)move=corners[Math.floor(Math.random()*corners.length)];}
+// 5. Otherwise random available
+  if(move===null){const av=board.map((v,i)=>v?null:i).filter(v=>v!==null);move=av[Math.floor(Math.random()*av.length)];}
+  playMove(move,compSide);},500);}
+
+btnPVP.onclick=()=>{mode='pvp';btnPVP.classList.add('active');btnPVC.classList.remove('active');sideSelect.style.display='none';resetAndStart();}
+btnPVC.onclick=()=>{mode='pvc';btnPVC.classList.add('active');btnPVP.classList.remove('active');sideSelect.style.display='block';resetAndStart();}
+document.querySelectorAll('input[name="side"]').forEach(r=>r.onchange=()=>{humanSide=r.value;compSide=(r.value==='X')?'O':'X';resetAndStart();});
+startBtn.onclick=()=>{scores={X:0,O:0,D:0};resetAndStart();}
+restartBtn.onclick=()=>resetAndStart();
+
+resetAndStart();
+</script>
+</body>
+</html>
